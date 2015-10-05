@@ -11,9 +11,11 @@ module Run (
 , parseColumnName
 ) where
 
+import           Control.Monad
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.ByteString.Char8 as B
-import           Data.Csv hiding (decodeByName, header, record, Field)
+import           Data.Csv hiding (decode, decodeByName, header, record, Field)
+import qualified Data.Csv as Csv
 import           Data.Csv.Streaming
 import           Data.Foldable
 
@@ -32,21 +34,25 @@ data ColumnStats = NumberStats !(Stats Number) | TextStats !(Stats Text)
   deriving (Eq, Show)
 
 processInput :: LB.ByteString -> Either String [Column]
-processInput input = case decodeByName input of
-  Left err -> Left err
-  Right (header, records :: Records NamedRecord) -> eachRecord records (parseHeader header) processRow
+processInput input = do
+  header <- decodeHeader
+  eachRecord (decode HasHeader input) header processRow
+  where
+    decodeHeader :: Either String [Column]
+    decodeHeader = parseHeader . fst <$>
+      (decodeByName input :: Either String (Header, Records NamedRecord))
 
-processRow :: NamedRecord -> [Column] -> Either String [Column]
-processRow record = either Left return . mapM (processCell record)
+processRow :: Record -> [Column] -> Either String [Column]
+processRow record = zipWithM processCell (toList record)
 
-processCell :: NamedRecord -> Column -> Either String Column
-processCell record Column{..} = Column columnName <$> do
+processCell :: Csv.Field -> Column -> Either String Column
+processCell v Column{..} = Column columnName <$> do
   case columnStats of
     NumberStats stats -> NumberStats . (`addNumberDataPoint` stats) <$> value
     TextStats stats -> TextStats . (`addTextDataPoint` stats) <$> value
   where
     value :: FromField a => Either String a
-    value = runParser (record .: columnName >>= parseField)
+    value = runParser (parseField v)
 
 eachRecord :: Records a -> b -> (a -> b -> Either String b) -> Either String b
 eachRecord records acc0 action = go records acc0

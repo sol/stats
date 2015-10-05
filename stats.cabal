@@ -1,0 +1,50 @@
+-- This file has been generated from package.yaml by hpack version 0.8.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           stats
+version:        0.0.0
+build-type:     Simple
+cabal-version:  >= 1.10
+
+executable stats
+  main-is: Main.hs
+  hs-source-dirs:
+      driver
+    , src
+  ghc-options: -Wall
+  ghc-prof-options: -fprof-auto -prof
+  build-depends:
+      base >= 4.8.1
+    , bytestring
+    , cassava
+    , text
+  other-modules:
+      Render
+      Run
+      Stats
+  default-language: Haskell2010
+
+test-suite spec
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  hs-source-dirs:
+      src
+    , test
+  ghc-options: -Wall
+  ghc-prof-options: -fprof-auto -prof
+  build-depends:
+      base >= 4.8.1
+    , bytestring
+    , cassava
+    , text
+    , hspec
+    , QuickCheck
+  other-modules:
+      Render
+      Run
+      Stats
+      RenderSpec
+      RunSpec
+      StatsSpec
+  default-language: Haskell2010

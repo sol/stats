@@ -1,0 +1,26 @@
+ghc-options: -Wall
+
+ghc-prof-options: -fprof-auto -prof
+
+dependencies:
+  - base >= 4.8.1
+  - bytestring
+  - cassava
+  - text
+
+executables:
+  stats:
+    main: Main.hs
+    source-dirs:
+      - driver
+      - src
+
+tests:
+  spec:
+    main: Spec.hs
+    source-dirs:
+      - src
+      - test
+    dependencies:
+      - hspec
+      - QuickCheck

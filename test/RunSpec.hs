@@ -25,6 +25,7 @@ spec = do
           , Field "count(shortest value)" "1"
           , Field "count(longest value)" "1"
           , Field "average length" "3.0"
+          , Field "distinct count (estimate)" "2"
           ]
         , Section "bar (number)" [
             Field "count" "2"

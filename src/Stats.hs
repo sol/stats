@@ -1,4 +1,6 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TemplateHaskell #-}
 module Stats (
   Stats
 , statsCount
@@ -19,8 +21,11 @@ module Stats (
 , statsCountShortest
 , statsCountLongest
 , statsAverageLength
+, statsDistinctCount
 ) where
 
+import           Data.HyperLogLog
+import           Data.Approximate.Type
 import           Data.List
 
 data Stats a = Stats {
@@ -79,16 +84,18 @@ data Text = Text {
   textSumLength :: !Integer
 , textCountShortest :: !CountOccurrence
 , textCountLongest :: !CountOccurrence
+, textCountDistinct :: !(HyperLogLog $(10))
 } deriving (Eq, Show)
 
 emptyTextStats :: Stats Text
-emptyTextStats = emptyStats $ Text 0 None None
+emptyTextStats = emptyStats $ Text 0 None None mempty
 
 addTextDataPoint :: Maybe String -> Stats Text -> Stats Text
 addTextDataPoint = addDataPoint $ \ value Text{..} -> Text {
     textSumLength = textSumLength + genericLength value
   , textCountShortest = count (<) value textCountShortest
   , textCountLongest = count (>) value textCountLongest
+  , textCountDistinct = Data.HyperLogLog.insert value textCountDistinct
   }
   where
     count op value old = case old of
@@ -115,3 +122,7 @@ statsAverageLength :: Stats Text -> Double
 statsAverageLength Stats{..}
   | statsCount == 0 = 0
   | otherwise = fromInteger (textSumLength statsAdditionalData) / fromInteger statsCount
+
+statsDistinctCount :: Stats Text -> Integer
+statsDistinctCount stats = case size . textCountDistinct . statsAdditionalData $ stats of
+  Approximate _ _ x _ -> fromIntegral x

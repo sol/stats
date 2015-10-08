@@ -19,6 +19,8 @@ executable stats
     , bytestring
     , cassava
     , text
+    , hyperloglog
+    , approximate
   other-modules:
       Render
       Run
@@ -38,6 +40,8 @@ test-suite spec
     , bytestring
     , cassava
     , text
+    , hyperloglog
+    , approximate
     , hspec
     , QuickCheck
   other-modules:

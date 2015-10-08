@@ -87,6 +87,7 @@ renderTextStats stats = renderCommonStats stats ++ [
     field "count(shortest value)" (statsCountShortest stats)
   , field "count(longest value)" (statsCountLongest stats)
   , field "average length" (statsAverageLength stats)
+  , field "distinct count (estimate)" (statsDistinctCount stats)
   ]
 
 renderCommonStats :: Stats a -> [Field]
